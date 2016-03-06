@@ -29,12 +29,13 @@ var g_EyeX = 0.20, g_EyeY = 0.25, g_EyeZ = 4.25;
 var g_AtX = 0, g_AtY = 0, g_AtZ = 0;
 var g_UpX = 0, g_UpY = 1, g_UpZ = 0;
 var canvas, rendering;
-var gndVerts;
+var gndVerts, armPartVerts;
 
 function initVertexBuffers(rendering) {
     gndVerts = makeGroundGrid();
+    armPart = makeArmPart();
 
-    vertSize = gndVerts.length;
+    vertSize = gndVerts.length + armPart.length;
     var vertNum = vertSize / floatsPerVertex;
 
     var verticesColors = new Float32Array(vertSize);
@@ -42,6 +43,11 @@ function initVertexBuffers(rendering) {
     gndStart = 0;
     for (i = 0, j = 0; j < gndVerts.length; i++, j++) {
         verticesColors[i] = gndVerts[j];
+    }
+
+    armPartStart = i;
+    for (j = 0; i < armPartVerts; i++, j++) {
+        verticesColors[i] = armPart[j];
     }
 
     var vertexColorBuffer = rendering.createBuffer();
@@ -78,14 +84,44 @@ function initVertexBuffers(rendering) {
 
 /* Start of jointed arm drawing functions */
 function base() {
-    modelMatrix.scale();
-    modelMatrix.translate();
+    var BASE_WIDTH = 5.0;
+    var BASE_HEIGHT = 2.0;
+    viewMatrix.scale(BASE_WIDTH, BASE_HEIGHT, BASE_WIDTH);
+    viewMatrix.translate(0.0, 0.5 * BASE_HEIGHT, 0.0);
+
+    mvpMatrix.set(projMatrix).multiply(viewMatrix).multiply(modelMatrix);
+    rendering.uniformMatrix4fv(u_mvpMatrix, false, mvpMatrix.elements);
+    
+    rendering.drawArrays(rendering.TRIANGLES, 
+                        armPartStart / floatsPerVertex, 
+                        armPart.length / floatsPerVertex);
+}
+
+function upperArm() {
+    var UPPER_ARM_WIDTH = 0.5;
+    var UPPER_ARM_HEIGHT = 5.0;
+    viewMatrix.scale(UPPER_ARM_WIDTH, UPPER_ARM_HEIGHT, UPPER_ARM_WIDTH);
+    viewMatrix.translate(0.0, 0.5 * UPPER_ARM_HEIGHT, 0.0);
 
     mvpMatrix.set(projMatrix).multiply(viewMatrix).multiply(modelMatrix);
     rendering.uniformMatrix4fv(u_mvpMatrix, false, mvpMatrix.elements);
 
-    rendering.drawArrays(rendering.TRIANGLES, 
-                        armPartStart / floatsPerVertex, 
+    rendering.drawArrays(rendering.TRIANGLES,
+                        armPartStart / floatsPerVertex,
+                        armPart.length / floatsPerVertex);
+}
+
+function lowerArm() {
+    var LOWER_ARM_WIDTH = 0.5;
+    var LOWER_ARM_HEIGHT = 5.0;
+    viewMatrix.scale(LOWER_ARM_WIDTH, LOWER_ARM_HEIGHT, LOWER_ARM_WIDTH);
+    viewMatrix.translate(0.0, 0.5 * LOWER_ARM_HEIGHT, 0.0);
+
+    mvpMatrix.set(projMatrix).multiply(viewMatrix).multiply(modelMatrix);
+    rendering.uniformMatrix4fv(u_mvpMatrix, false, mvpMatrix.elements);
+
+    rendering.drawArrays(rendering.TRIANGLES,
+                        armPartStart / floatsPerVertex,
                         armPart.length / floatsPerVertex);
 }
 /* End of jointed arm drawing functions */
@@ -106,7 +142,8 @@ function draw(rendering) {
 }
 
 function drawScene(rendering) {
-    viewMatrix.rotate(-90.0, 1,0,0);
+    // Draw the ground plane 
+    viewMatrix.rotate(-90.0, 1, 0, 0);
     viewMatrix.translate(0.0, 0.0, -0.6);
     viewMatrix.scale(0.4, 0.4, 0.4);
 
@@ -116,6 +153,14 @@ function drawScene(rendering) {
     rendering.drawArrays(rendering.LINES, 
             gndStart / floatsPerVertex, 
             gndVerts.length / floatsPerVertex);
+
+    // Then rotate back the view matrix
+    viewMatrix.rotate(90.0, 1, 0, 0);
+   
+    // Then draw the robot parts
+    base();
+    lowerArm();
+    upperArm();
 }
 
 function resize() {
