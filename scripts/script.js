@@ -26,7 +26,7 @@ var FSHADER =
 '   }\n';
 
 var g_EyeX = 0.20, g_EyeY = 0.25, g_EyeZ = 4.25;
-var canvas;
+var canvas, rendering;
 var gndVerts;
 
 function initVertexBuffers(rendering) {
@@ -71,6 +71,7 @@ function initVertexBuffers(rendering) {
 }
 
 function draw(rendering) {
+    resize(rendering);
     rendering.clear(rendering.COLOR_BUFFER_BIT | rendering.DEPTH_BUFFER_BIT);
     rendering.viewport(0, 0, canvas.width, canvas.height);
 
@@ -90,17 +91,19 @@ function draw(rendering) {
             gndVerts.length / floatsPerVertex);
 }
 
-$(window).on('resize', function() {
-    var rendering = getWebGLContext(canvas);
-
+function resize(rendering) {
+    var canvas = rendering.canvas;
     var displayWidth  = canvas.clientWidth;
     var displayHeight = canvas.clientHeight;
 
     if (canvas.width  != displayWidth || canvas.height != displayHeight) {
         canvas.width  = displayWidth;
         canvas.height = displayHeight;
+        rendering.viewport(0, 0, canvas.width, canvas.height);
     }
-    
+}
+
+$(window).on('resize', function() {
     draw(rendering);
 });
 
@@ -108,7 +111,7 @@ $(document).ready(function() {
     canvas = $("#webgl").get(0);
     canvas.height = window.innerHeight;
     canvas.width = window.innerWidth;
-    var rendering = getWebGLContext(canvas);
+    rendering = getWebGLContext(canvas);
 
     if (!rendering) {
         throw new Error("Unable to get WebGL context.");
