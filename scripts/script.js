@@ -50,15 +50,18 @@ function initVertexBuffers(rendering) {
     }
 
     rendering.bindBuffer(rendering.ARRAY_BUFFER, vertexColorBuffer);
-    rendering.bufferData(rendering.ARRAY_BUFFER, verticesColors, rendering.STATIC_DRAW);
+    rendering.bufferData(rendering.ARRAY_BUFFER, verticesColors, 
+        rendering.STATIC_DRAW);
 
     var FSIZE = verticesColors.BYTES_PER_ELEMENT;
-    var a_Position = rendering.getAttribLocation(rendering.program, "a_Position");
+    var a_Position = rendering.getAttribLocation(rendering.program, 
+        "a_Position");
     if (a_Position < 0) {
         throw new Error("Failed to get storage location of a_Position");
     }
 
-    rendering.vertexAttribPointer(a_Position, 3, rendering.FLOAT, false, FSIZE * 6, 0);
+    rendering.vertexAttribPointer(a_Position, 3, rendering.FLOAT, 
+        false, FSIZE * 6, 0);
     rendering.enableVertexAttribArray(a_Position);
 
     var a_Color = rendering.getAttribLocation(rendering.program, 'a_Color');
@@ -66,7 +69,8 @@ function initVertexBuffers(rendering) {
         throw new Error("Failed to get storage location of a_Color");
     }
 
-    rendering.vertexAttribPointer(a_Color, 3, rendering.FLOAT, false, FSIZE * 6, FSIZE * 3);
+    rendering.vertexAttribPointer(a_Color, 3, rendering.FLOAT, 
+            false, FSIZE * 6, FSIZE * 3);
     rendering.enableVertexAttribArray(a_Color);
 
     return vertSize / floatsPerVertex;
@@ -88,7 +92,8 @@ function base() {
 
 function draw(rendering) {
     rendering.clear(rendering.COLOR_BUFFER_BIT | rendering.DEPTH_BUFFER_BIT);
-    rendering.viewport(0, 0, rendering.drawingBufferWidth, rendering.drawingBufferHeight);
+    rendering.viewport(0, 0, rendering.drawingBufferWidth, 
+            rendering.drawingBufferHeight);
 
     viewMatrix.setLookAt(g_EyeX, g_EyeY, g_EyeZ,
                         g_AtX, g_AtY, g_AtZ,
@@ -189,8 +194,10 @@ $(document).ready(function() {
 
     rendering.clearColor(0.0, 0.0, 0.0, 1.0);
 
-    u_mvpMatrix = rendering.getUniformLocation(rendering.program, "u_mvpMatrix");
-    u_NormalMatrix = rendering.getUniformLocation(rendering.program, "u_NormalMatrix");
+    u_mvpMatrix = rendering.getUniformLocation(rendering.program, 
+            "u_mvpMatrix");
+    u_NormalMatrix = rendering.getUniformLocation(rendering.program, 
+            "u_NormalMatrix");
     if (!u_mvpMatrix || !u_NormalMatrix) {
         throw new Error("Failed to get mvp_matrix or normal_matrix.");
         return;
