@@ -72,6 +72,20 @@ function initVertexBuffers(rendering) {
     return vertSize / floatsPerVertex;
 }
 
+/* Start of jointed arm drawing functions */
+function base() {
+    modelMatrix.scale();
+    modelMatrix.translate();
+
+    mvpMatrix.set(projMatrix).multiply(viewMatrix).multiply(modelMatrix);
+    rendering.uniformMatrix4fv(u_mvpMatrix, false, mvpMatrix.elements);
+
+    rendering.drawArrays(rendering.TRIANGLES, 
+                        armPartStart / floatsPerVertex, 
+                        armPart.length / floatsPerVertex);
+}
+/* End of jointed arm drawing functions */
+
 function draw(rendering) {
     rendering.clear(rendering.COLOR_BUFFER_BIT | rendering.DEPTH_BUFFER_BIT);
     rendering.viewport(0, 0, rendering.drawingBufferWidth, rendering.drawingBufferHeight);
