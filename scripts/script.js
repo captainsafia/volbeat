@@ -127,10 +127,6 @@ function resize() {
     draw(rendering);
 }
 
-$(window).on('resize', function() {
-    draw(rendering);
-});
-
 $(document).keydown(function(event) {
     switch (event.which) {
         // Up arrow
