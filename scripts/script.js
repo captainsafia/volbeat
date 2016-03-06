@@ -26,6 +26,8 @@ var FSHADER =
 '   }\n';
 
 var g_EyeX = 0.20, g_EyeY = 0.25, g_EyeZ = 4.25;
+var g_AtX = 0, g_AtY = 0, g_AtZ = 0;
+var g_UpX = 0, g_UpY = 1, g_UpZ = 0;
 var canvas, rendering;
 var gndVerts;
 
@@ -71,15 +73,20 @@ function initVertexBuffers(rendering) {
 }
 
 function draw(rendering) {
-    resize(rendering);
     rendering.clear(rendering.COLOR_BUFFER_BIT | rendering.DEPTH_BUFFER_BIT);
-    rendering.viewport(0, 0, canvas.width, canvas.height);
+    rendering.viewport(0, 0, rendering.drawingBufferWidth, rendering.drawingBufferHeight);
 
     viewMatrix.setLookAt(g_EyeX, g_EyeY, g_EyeZ,
-                        0, 0, 0,
-                        0, 1, 0);
-    projMatrix.setPerspective(40, canvas.width / canvas.height, 1, 100);
+                        g_AtX, g_AtY, g_AtZ,
+                        g_UpX, g_UpY, g_UpZ);
 
+    mvpMatrix.set(projMatrix).multiply(viewMatrix).multiply(modelMatrix);
+    rendering.uniformMatrix4fv(u_mvpMatrix, false, mvpMatrix.elements);
+
+    drawScene(rendering);
+}
+
+function drawScene(rendering) {
     modelMatrix.rotate(-90.0, 1,0,0);
     modelMatrix.translate(0.0, 0.0, -0.6);
 
@@ -91,26 +98,62 @@ function draw(rendering) {
             gndVerts.length / floatsPerVertex);
 }
 
-function resize(rendering) {
-    var canvas = rendering.canvas;
-    var displayWidth  = canvas.clientWidth;
-    var displayHeight = canvas.clientHeight;
+function resize() {
+    var canvas = $("#webgl").get(0);
+    var rendering = getWebGLContext(canvas);
+    
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
-    if (canvas.width  != displayWidth || canvas.height != displayHeight) {
-        canvas.width  = displayWidth;
-        canvas.height = displayHeight;
-        rendering.viewport(0, 0, canvas.width, canvas.height);
-    }
+    draw(rendering);
 }
 
 $(window).on('resize', function() {
     draw(rendering);
 });
 
+$(document).keydown(function(event) {
+    switch (event.which) {
+        // Up arrow
+        case 38:
+            console.log('up');
+            g_EyeZ += 0.1;
+            g_AtZ += 0.1;
+            break;
+        // Down arrow
+        case 40:
+            console.log('down');
+            g_EyeZ -= 0.1;
+            g_AtZ -= 0.1;
+            break;
+        // Right arrow
+        case 39:
+            console.log('right');
+            g_EyeX += 0.1;
+            g_AtX += 0.1;
+            break;
+        // Left arrow
+        case 37:
+            console.log('left');
+            g_EyeX -= 0.1;
+            g_AtX -= 0.1;
+            break;
+        // 'A' key
+        case 65:
+            console.log('a');
+            break;
+        // 'S' key
+        case 83:
+            console.log('s');
+            break;
+    }
+    draw(rendering);
+});
+
 $(document).ready(function() {
     canvas = $("#webgl").get(0);
-    canvas.height = window.innerHeight;
     canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
     rendering = getWebGLContext(canvas);
 
     if (!rendering) {
@@ -134,7 +177,6 @@ $(document).ready(function() {
 
     u_mvpMatrix = rendering.getUniformLocation(rendering.program, "u_mvpMatrix");
     u_NormalMatrix = rendering.getUniformLocation(rendering.program, "u_NormalMatrix");
-
     if (!u_mvpMatrix || !u_NormalMatrix) {
         throw new Error("Failed to get mvp_matrix or normal_matrix.");
         return;
@@ -144,6 +186,10 @@ $(document).ready(function() {
     modelMatrix = new Matrix4();
     projMatrix = new Matrix4();
     mvpMatrix = new Matrix4();
+
+    projMatrix.setPerspective(40, canvas.width / canvas.height, 1, 100);
+    mvpMatrix.set(projMatrix).multiply(viewMatrix).multiply(modelMatrix);
+    rendering.uniformMatrix4fv(u_mvpMatrix, false, mvpMatrix.elements);
 
     draw(rendering);
 });
