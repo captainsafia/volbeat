@@ -1,41 +1,15 @@
-// Vertex shader
-var VSHADER = 
-'   attribute vec4 a_Position;\n' +
-'   attribute vec4 a_Color;\n' +
-'   attribute vec4 a_Normal;\n' +
-'   uniform mat4 u_mvpMatrix;\n' +
-'   uniform mat4 u_NormalMatrix;\n' +
-'   varying vec4 v_Color;\n' +
-'   void main() {\n' +
-'       gl_Position = u_mvpMatrix * a_Position;\n' +
-'       vec3 lightDirection = normalize(vec3(0.0, 0.5, 0.7));\n' +
-'       vec4 color = vec4(1.0, 0.4, 0.0, 1.0);\n' +
-'       vec3 normal = normalize((u_NormalMatrix * a_Normal).xyz);\n' +
-'       float nDotL = max(dot(normal, lightDirection), 0.0);\n' +
-'       v_Color = a_Color;\n' +
-'   }\n';
-
-// Fragment shader
-var FSHADER = 
-'   #ifdef GL_ES\n' +
-'   precision mediump float;\n' +
-'   #endif\n' +
-'   varying vec4 v_Color;\n' +
-'   void main() {\n' +
-'       gl_FragColor = v_Color;\n' +
-'   }\n';
-
 var g_EyeX = 0.20, g_EyeY = 0.25, g_EyeZ = 4.25;
 var g_AtX = 0, g_AtY = 0, g_AtZ = 0;
 var g_UpX = 0, g_UpY = 1, g_UpZ = 0;
 var canvas, rendering;
-var gndVerts, armPartVerts;
+var gndVerts, armPart, sphereVerts;
 
 function initVertexBuffers(rendering) {
     gndVerts = makeGroundGrid();
     armPart = makeArmPart();
+    sphereVerts = makeSphere(20);
 
-    vertSize = gndVerts.length + armPart.length;
+    vertSize = gndVerts.length + armPart.length + sphereVerts.length;
     var vertNum = vertSize / floatsPerVertex;
 
     var verticesColors = new Float32Array(vertSize);
@@ -46,8 +20,13 @@ function initVertexBuffers(rendering) {
     }
 
     armPartStart = i;
-    for (j = 0; i < armPartVerts; i++, j++) {
+    for (j = 0; i < armPart.length; i++, j++) {
         verticesColors[i] = armPart[j];
+    }
+
+    sphereStart = i;
+    for (j = 0; i < sphereVerts.length; i++, j++) {
+        verticesColors[i] = sphereVerts[j];
     }
 
     var vertexColorBuffer = rendering.createBuffer();
@@ -87,7 +66,7 @@ function base() {
     var BASE_WIDTH = 5.0;
     var BASE_HEIGHT = 2.0;
     viewMatrix.scale(BASE_WIDTH, BASE_HEIGHT, BASE_WIDTH);
-    viewMatrix.translate(0.0, 0.5 * BASE_HEIGHT, 0.0);
+    viewMatrix.translate(0.4, 0.5 * BASE_HEIGHT, -0.6);
 
     mvpMatrix.set(projMatrix).multiply(viewMatrix).multiply(modelMatrix);
     rendering.uniformMatrix4fv(u_mvpMatrix, false, mvpMatrix.elements);
@@ -156,11 +135,19 @@ function drawScene(rendering) {
 
     // Then rotate back the view matrix
     viewMatrix.rotate(90.0, 1, 0, 0);
+    viewMatrix.translate(0.0, 4.0, 0);
+
+    mvpMatrix.set(projMatrix).multiply(viewMatrix).multiply(modelMatrix);
+    rendering.uniformMatrix4fv(u_mvpMatrix, false, mvpMatrix.elements);
+
+    rendering.drawArrays(rendering.TRIANGLE_STRIP,
+            sphereStart / floatsPerVertex,
+            sphereVerts.length / floatsPerVertex);
    
     // Then draw the robot parts
-    base();
-    lowerArm();
-    upperArm();
+    // base();
+    // lowerArm();
+    // upperArm();
 }
 
 function resize() {
