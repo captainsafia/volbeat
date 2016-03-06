@@ -106,8 +106,9 @@ function draw(rendering) {
 }
 
 function drawScene(rendering) {
-    modelMatrix.rotate(-90.0, 1,0,0);
-    modelMatrix.translate(0.0, 0.0, -0.6);
+    viewMatrix.rotate(-90.0, 1,0,0);
+    viewMatrix.translate(0.0, 0.0, -0.6);
+    viewMatrix.scale(0.4, 0.4, 0.4);
 
     mvpMatrix.set(projMatrix).multiply(viewMatrix).multiply(modelMatrix);
     rendering.uniformMatrix4fv(u_mvpMatrix, false, mvpMatrix.elements);
