@@ -132,35 +132,38 @@ $(document).keydown(function(event) {
     switch (event.which) {
         // Up arrow
         case 38:
-            console.log('up');
             g_EyeZ += 0.1;
             g_AtZ += 0.1;
             break;
         // Down arrow
         case 40:
-            console.log('down');
             g_EyeZ -= 0.1;
             g_AtZ -= 0.1;
             break;
         // Right arrow
         case 39:
-            console.log('right');
             g_EyeX += 0.1;
             g_AtX += 0.1;
             break;
         // Left arrow
         case 37:
-            console.log('left');
             g_EyeX -= 0.1;
             g_AtX -= 0.1;
             break;
         // 'A' key
         case 65:
-            console.log('a');
-            break;
+            g_AtX += g_EyeX + Math.cos(0.01);
         // 'S' key
         case 83:
-            console.log('s');
+            g_AtX -= g_EyeX + Math.cos(0.01);
+            break;
+        // 'Z' key
+        case 90:
+            g_AtY += 0.01;
+            break;
+        // 'X' key
+        case 88:
+            g_AtY -= 0.01;
             break;
     }
     draw(rendering);
