@@ -6,8 +6,40 @@
 
     <body onresize="resize()">
         <div style="text-align:center;">
+            <p> Use the arrow keys to pan around the screen. </p>
+            <p> Use the buttons to turn the light sources on and off. </p>
+            <p> Use the sliders to change the R,G,B values for a single light source. </p>
             <button id="headlight-status">Turn Headlight Off</button>
             <button id="lamp-status">Turn Lamp Off</button>
+            <br>
+            <label for="posX">X Position</label>
+            <input type="range" id="posX" min=0 max=1.0 step=0.1>
+            <label for="posY">Y Position</label>
+            <input type="range" id="posY" min=0 max=1.0 step=0.1>
+            <label for="posZ">Z Position</label>
+            <input type="range" id="posZ" min=0 max=1.0 step=0.1>
+            <br>
+            <label for="ambR">Ambience R</label>
+            <input type="range" id="ambR" min=0 max=1.0 step=0.1>
+            <label for="ambG">Ambience G</label>
+            <input type="range" id="ambG" min=0 max=1.0 step=0.1>
+            <label for="ambB">Ambience B</label>
+            <input type="range" id="ambB" min=0 max=1.0 step=0.1>
+            <br>
+            <label for="diffR">Diffuse R</label>
+            <input type="range" id="diffR" min=0 max=1.0 step=0.1>
+            <label for="diffG">Diffuse G</label>
+            <input type="range" id="diffG" min=0 max=1.0 step=0.1>
+            <label for="diffB">Diffuse B</label>
+            <input type="range" id="diffB" min=0 max=1.0 step=0.1>
+            <br>
+            <label for="specR">Specular R</label>
+            <input type="range" id="specR" min=0 max=1.0 step=0.1>
+            <label for="specG">Specular G</label>
+            <input type="range" id="specG" min=0 max=1.0 step=0.1>
+            <label for="specB">Specular B</label>
+            <input type="range" id="specB" min=0 max=1.0 step=0.1>
+            <hr>
         </div>
         <canvas id="webgl">
             Please us a browser that supports "canvas".

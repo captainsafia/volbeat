@@ -6,6 +6,12 @@ var gndVerts, armPart, sphereVerts;
 
 var headlight = true;
 var lamp = true;
+var lampAttr = {
+    "posX": 1.0, "posY": 1.0, "posZ": 2.0,
+    "ambR": 0.4, "ambG": 0.4, "ambB": 0.4,
+    "diffR": 1.0, "diffG": 1.0, "diffG": 1.0,
+    "specR": 1.0, "specG": 1.0, "specG": 1.0,
+};
 
 function initArrayBuffer(gl, attribute, data, type, num) {
     var buffer = gl.createBuffer();
@@ -133,10 +139,10 @@ function drawScene(rendering) {
     }
 
     if (lamp) {
-        rendering.uniform4f(u_Lamp1Pos, 1, 10.0, 10.0, 1.0);
-        rendering.uniform3f(u_Lamp1Amb,  0.4, 0.4, 0.4);
-        rendering.uniform3f(u_Lamp1Diff, 1.0, 1.0, 1.0);
-        rendering.uniform3f(u_Lamp1Spec, 1.0, 1.0, 1.0);
+        rendering.uniform4f(u_Lamp1Pos, lampAttr["posX"], lampAttr["posY"], lampAttr["posZ"], 1.0);
+        rendering.uniform3f(u_Lamp1Amb, lampAttr["ambR"], lampAttr["ambG"], lampAttr["ambB"]);
+        rendering.uniform3f(u_Lamp1Diff, lampAttr["diffR"], lampAttr["diffG"], lampAttr["diffB"]);
+        rendering.uniform3f(u_Lamp1Spec, lampAttr["specR"], lampAttr["specG"], lampAttr["specB"]);
     } else {
         rendering.uniform4f(u_Lamp1Pos, 0.0, 0.0, 0.0, 1.0);
     }
@@ -267,6 +273,11 @@ $("#headlight-status").click(function() {
 $("#lamp-status").click(function() {
     lamp = !lamp;
     $(this).text(lamp ? "Turn Lamp Off" : "Turn Lamp On"); 
+    draw(rendering);
+});
+
+$(":input[type=range]").on("input", function() {
+    lampAttr[this.id] = this.value;
     draw(rendering);
 });
 
