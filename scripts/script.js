@@ -4,61 +4,56 @@ var g_UpX = 0, g_UpY = 1, g_UpZ = 0;
 var canvas, rendering;
 var gndVerts, armPart, sphereVerts;
 
+function initArrayBuffer(gl, attribute, data, type, num) {
+    var buffer = gl.createBuffer();
+    if (!buffer) {
+        throw new Error('Failed to create buffer object.');
+    }
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+
+    var a_attribute = gl.getAttribLocation(gl.program, attribute);
+    if (a_attribute < 0) {
+        throw new Error("Failed to get storage location of " + attribute);
+    }
+
+    gl.vertexAttribPointer(a_attribute, num, type, false, 0, 0);
+    gl.enableVertexAttribArray(a_attribute);
+
+    return true;
+}
+
 function initVertexBuffers(rendering) {
-    gndVerts = makeGroundGrid();
-    armPart = makeArmPart();
-    sphereVerts = makeSphere(20);
+    sphereVerts = makeSphere();
 
-    vertSize = gndVerts.length + armPart.length + sphereVerts.length;
-    var vertNum = vertSize / floatsPerVertex;
-
-    var verticesColors = new Float32Array(vertSize);
-
-    gndStart = 0;
-    for (i = 0, j = 0; j < gndVerts.length; i++, j++) {
-        verticesColors[i] = gndVerts[j];
+    if(!initArrayBuffer(rendering, 
+            'a_Position', 
+            new Float32Array(sphereVerts.position), 
+            rendering.FLOAT, 3)) {
+        return -1;
     }
 
-    armPartStart = i;
-    for (j = 0; i < armPart.length; i++, j++) {
-        verticesColors[i] = armPart[j];
+    if(!initArrayBuffer(rendering, 
+            'a_Normal', 
+            new Float32Array(sphereVerts.position), 
+            rendering.FLOAT, 3)) {
+        return -1;
     }
 
-    sphereStart = i;
-    for (j = 0; i < sphereVerts.length; i++, j++) {
-        verticesColors[i] = sphereVerts[j];
+    rendering.bindBuffer(rendering.ARRAY_BUFFER, null);
+    
+    var indexBuffer = rendering.createBuffer();
+    if (!indexBuffer) {
+        throw new Error("Failed to create buffer object.");
     }
 
-    var vertexColorBuffer = rendering.createBuffer();
-    if (!vertexColorBuffer) {
-        throw new ("Failed to create buffer object.");
-    }
-
-    rendering.bindBuffer(rendering.ARRAY_BUFFER, vertexColorBuffer);
-    rendering.bufferData(rendering.ARRAY_BUFFER, verticesColors, 
-        rendering.STATIC_DRAW);
-
-    var FSIZE = verticesColors.BYTES_PER_ELEMENT;
-    var a_Position = rendering.getAttribLocation(rendering.program, 
-        "a_Position");
-    if (a_Position < 0) {
-        throw new Error("Failed to get storage location of a_Position");
-    }
-
-    rendering.vertexAttribPointer(a_Position, 3, rendering.FLOAT, 
-        false, FSIZE * 6, 0);
-    rendering.enableVertexAttribArray(a_Position);
-
-    var a_Color = rendering.getAttribLocation(rendering.program, 'a_Color');
-    if (a_Color < 0) {
-        throw new Error("Failed to get storage location of a_Color");
-    }
-
-    rendering.vertexAttribPointer(a_Color, 3, rendering.FLOAT, 
-            false, FSIZE * 6, FSIZE * 3);
-    rendering.enableVertexAttribArray(a_Color);
-
-    return vertSize / floatsPerVertex;
+    rendering.bindBuffer(rendering.ELEMENT_ARRAY_BUFFER, indexBuffer);
+    rendering.bufferData(rendering.ELEMENT_ARRAY_BUFFER, 
+            new Uint16Array(sphereVerts.index),
+            rendering.STATIC_DRAW);
+    
+    return sphereVerts.index.length;
 }
 
 /* Start of jointed arm drawing functions */
@@ -121,33 +116,46 @@ function draw(rendering) {
 }
 
 function drawScene(rendering) {
-    // Draw the ground plane 
-    viewMatrix.rotate(-90.0, 1, 0, 0);
-    viewMatrix.translate(0.0, 0.0, -0.6);
-    viewMatrix.scale(0.4, 0.4, 0.4);
+    rendering.drawElements(rendering.TRIANGLES,
+            n,
+            rendering.UNSIGNED_SHORT,
+            0);
 
+    viewMatrix.translate(3.0, 0.0, 0.0);
     mvpMatrix.set(projMatrix).multiply(viewMatrix).multiply(modelMatrix);
     rendering.uniformMatrix4fv(u_mvpMatrix, false, mvpMatrix.elements);
 
-    rendering.drawArrays(rendering.LINES, 
-            gndStart / floatsPerVertex, 
-            gndVerts.length / floatsPerVertex);
+    rendering.drawElements(rendering.TRIANGLES,
+            n,
+            rendering.UNSIGNED_SHORT,
+            0);
 
-    // Then rotate back the view matrix
-    viewMatrix.rotate(90.0, 1, 0, 0);
-    viewMatrix.translate(0.0, 4.0, 0);
-
+    viewMatrix.translate(0.0, 0.0, 0.0);
     mvpMatrix.set(projMatrix).multiply(viewMatrix).multiply(modelMatrix);
     rendering.uniformMatrix4fv(u_mvpMatrix, false, mvpMatrix.elements);
 
-    rendering.drawArrays(rendering.TRIANGLE_STRIP,
-            sphereStart / floatsPerVertex,
-            sphereVerts.length / floatsPerVertex);
-   
-    // Then draw the robot parts
-    // base();
-    // lowerArm();
-    // upperArm();
+    rendering.drawElements(rendering.TRIANGLES,
+            n,
+            rendering.UNSIGNED_SHORT,
+            0);
+
+    viewMatrix.translate(-3.0, 0.0, 0.0);
+    mvpMatrix.set(projMatrix).multiply(viewMatrix).multiply(modelMatrix);
+    rendering.uniformMatrix4fv(u_mvpMatrix, false, mvpMatrix.elements);
+
+    rendering.drawElements(rendering.TRIANGLES,
+            n,
+            rendering.UNSIGNED_SHORT,
+            0);
+
+    viewMatrix.translate(-6.0, 0.0, 0.0);
+    mvpMatrix.set(projMatrix).multiply(viewMatrix).multiply(modelMatrix);
+    rendering.uniformMatrix4fv(u_mvpMatrix, false, mvpMatrix.elements);
+
+    rendering.drawElements(rendering.TRIANGLES,
+            n,
+            rendering.UNSIGNED_SHORT,
+            0);
 }
 
 function resize() {
@@ -218,31 +226,85 @@ $(document).ready(function() {
 
     rendering.enable(rendering.DEPTH_TEST);
 
-    var n = initVertexBuffers(rendering);
+    n = initVertexBuffers(rendering);
     if (n < 0) {
         throw new Error("Failed to specify vertex information.");
         return;
     }
 
     rendering.clearColor(0.0, 0.0, 0.0, 1.0);
-
+    
+    // Get the uniform variables associated with the scene
+    u_eyePosWorld = rendering.getUniformLocation(rendering.program,
+            "u_eyePosWorld");
+    u_ModelMatrix = rendering.getUniformLocation(rendering.program,
+            "u_ModelMatrix");
     u_mvpMatrix = rendering.getUniformLocation(rendering.program, 
             "u_mvpMatrix");
     u_NormalMatrix = rendering.getUniformLocation(rendering.program, 
             "u_NormalMatrix");
-    if (!u_mvpMatrix || !u_NormalMatrix) {
+    if (!u_mvpMatrix || !u_NormalMatrix || !u_ModelMatrix) {
         throw new Error("Failed to get mvp_matrix or normal_matrix.");
         return;
     }
+
+    // Get the uniform variables associated with the light source
+    var u_Lamp0Pos = rendering.getUniformLocation(rendering.program,
+            "u_Lamp0Pos");
+    var u_Lamp0Amb = rendering.getUniformLocation(rendering.program,
+            "u_Lamp0Amb");
+    var u_Lamp0Diff = rendering.getUniformLocation(rendering.program,
+            "u_Lamp0Diff");
+    var u_Lamp0Spec = rendering.getUniformLocation(rendering.program,
+            "u_Lamp0Spec");
+    if (!u_Lamp0Pos || !u_Lamp0Amb || !u_Lamp0Diff || !u_Lamp0Spec) {
+        throw new Error("Failed to get Lamp0 storage locations.");
+    }
+
+    // Get the material reflectance variables
+    var u_Ke = rendering.getUniformLocation(rendering.program, "u_Ke");
+    var u_Ka = rendering.getUniformLocation(rendering.program, "u_Ka");
+    var u_Kd = rendering.getUniformLocation(rendering.program, "u_Kd");
+    var u_Ks = rendering.getUniformLocation(rendering.program, "u_Ks");
+    if (!u_Ke || !u_Ka || !u_Kd || !u_Ks) {
+        throw new Error("Failed to get reflections storage locations");
+    }
+    
+    rendering.uniform4f(u_Lamp0Pos, 6.0, 6.0, 0.0, 1.0);
+    rendering.uniform3f(u_Lamp0Amb,  0.4, 0.4, 0.4);
+    rendering.uniform3f(u_Lamp0Diff, 1.0, 1.0, 1.0);
+    rendering.uniform3f(u_Lamp0Spec, 1.0, 1.0, 1.0);
+
+    rendering.uniform3f(u_Ke, 0.0, 0.0, 0.0);
+    rendering.uniform3f(u_Ka, 0.6, 0.0, 0.0);
+    rendering.uniform3f(u_Kd, 0.8, 0.0, 0.0);
+    rendering.uniform3f(u_Ks, 0.8, 0.8, 0.8);
 
     viewMatrix = new Matrix4();
     modelMatrix = new Matrix4();
     projMatrix = new Matrix4();
     mvpMatrix = new Matrix4();
+    normalMatrix = new Matrix4();
 
+    /* Calculate the model matrix. */
+    modelMatrix.setRotate(90, 0, 1, 0);
+
+    /* Configure the perspective and set the MVP matrix */
     projMatrix.setPerspective(40, canvas.width / canvas.height, 1, 100);
     mvpMatrix.set(projMatrix).multiply(viewMatrix).multiply(modelMatrix);
+
+    /* Calculate the inverse and tranpose of the model matrix */
+    normalMatrix.setInverseOf(modelMatrix);
+    normalMatrix.transpose();
+
+    /* Calculate the MVP matrix. */
+    mvpMatrix.set(projMatrix).multiply(viewMatrix).multiply(modelMatrix);
+
+    /* Pass back the set variables to the shaders */
+    rendering.uniform4f(u_eyePosWorld, g_EyeX, g_EyeY, g_EyeZ, 1);
+    rendering.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
     rendering.uniformMatrix4fv(u_mvpMatrix, false, mvpMatrix.elements);
+    rendering.uniformMatrix4fv(u_NormalMatrix,false, normalMatrix.elements);
 
     draw(rendering);
 });

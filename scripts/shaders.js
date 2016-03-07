@@ -29,6 +29,7 @@ var FSHADER =
 '   uniform vec3 u_Lamp0Amb;\n' +
 '   uniform vec3 u_Lamp0Diff;\n' +
 '   uniform vec3 u_Lamp0Spec;\n' +
+
 '   uniform vec3 u_Ke;\n' +
 '   uniform vec3 u_Ka;\n' +
 '   uniform vec3 u_Ks;\n' +
