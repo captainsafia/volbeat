@@ -4,6 +4,9 @@ var g_UpX = 0, g_UpY = 1, g_UpZ = 0;
 var canvas, rendering;
 var gndVerts, armPart, sphereVerts;
 
+var headlight = true;
+var lamp = true;
+
 function initArrayBuffer(gl, attribute, data, type, num) {
     var buffer = gl.createBuffer();
     if (!buffer) {
@@ -26,17 +29,21 @@ function initArrayBuffer(gl, attribute, data, type, num) {
 
 function initVertexBuffers(rendering) {
     sphereVerts = makeSphere();
+    gndVerts = makeGroundGrid();
+
+    positions = sphereVerts.position;
+    indices = sphereVerts.index;
 
     if(!initArrayBuffer(rendering, 
             'a_Position', 
-            new Float32Array(sphereVerts.position), 
+            new Float32Array(positions), 
             rendering.FLOAT, 3)) {
         return -1;
     }
 
     if(!initArrayBuffer(rendering, 
             'a_Normal', 
-            new Float32Array(sphereVerts.position), 
+            new Float32Array(positions), 
             rendering.FLOAT, 3)) {
         return -1;
     }
@@ -50,10 +57,10 @@ function initVertexBuffers(rendering) {
 
     rendering.bindBuffer(rendering.ELEMENT_ARRAY_BUFFER, indexBuffer);
     rendering.bufferData(rendering.ELEMENT_ARRAY_BUFFER, 
-            new Uint16Array(sphereVerts.index),
+            new Uint16Array(indices),
             rendering.STATIC_DRAW);
     
-    return sphereVerts.index.length;
+    return indices.length;
 }
 
 /* Start of jointed arm drawing functions */
@@ -116,6 +123,21 @@ function draw(rendering) {
 }
 
 function drawScene(rendering) {
+    if (headlight) {
+        console.log(headlight);
+        rendering.uniform4f(u_Lamp0Pos, 0.0, 0.2, 1.0, 1.0);
+        rendering.uniform3f(u_Lamp0Amb,  0.4, 0.4, 0.4);
+        rendering.uniform3f(u_Lamp0Diff, 1.0, 1.0, 1.0);
+        rendering.uniform3f(u_Lamp0Spec, 1.0, 1.0, 1.0);
+    } else {
+        rendering.uniform4f(u_Lamp0Pos, 0.0, 0.0, 0.0, 1.0);
+    }
+
+    var pearl = new Material(MATL_PEARL);
+    rendering.uniform3f(u_Ke, pearl.K_emit[0], pearl.K_emit[1], pearl.K_emit[2]);
+    rendering.uniform3f(u_Ka, pearl.K_ambi[0], pearl.K_ambi[1], pearl.K_ambi[2]);
+    rendering.uniform3f(u_Kd, pearl.K_diff[0], pearl.K_diff[1], pearl.K_diff[2]);
+    rendering.uniform3f(u_Ks, pearl.K_spec[0], pearl.K_spec[1], pearl.K_spec[2]);
     rendering.drawElements(rendering.TRIANGLES,
             n,
             rendering.UNSIGNED_SHORT,
@@ -125,15 +147,25 @@ function drawScene(rendering) {
     mvpMatrix.set(projMatrix).multiply(viewMatrix).multiply(modelMatrix);
     rendering.uniformMatrix4fv(u_mvpMatrix, false, mvpMatrix.elements);
 
+    var jade = new Material(MATL_JADE);
+    rendering.uniform3f(u_Ke, jade.K_emit[0], jade.K_emit[1], jade.K_emit[2]);
+    rendering.uniform3f(u_Ka, jade.K_ambi[0], jade.K_ambi[1], jade.K_ambi[2]);
+    rendering.uniform3f(u_Kd, jade.K_diff[0], jade.K_diff[1], jade.K_diff[2]);
+    rendering.uniform3f(u_Ks, jade.K_spec[0], jade.K_spec[1], jade.K_spec[2]);
     rendering.drawElements(rendering.TRIANGLES,
             n,
             rendering.UNSIGNED_SHORT,
             0);
 
-    viewMatrix.translate(0.0, 0.0, 0.0);
+    viewMatrix.translate(6.0, 0.0, 0.0);
     mvpMatrix.set(projMatrix).multiply(viewMatrix).multiply(modelMatrix);
     rendering.uniformMatrix4fv(u_mvpMatrix, false, mvpMatrix.elements);
 
+    var gold = new Material(MATL_GOLD_SHINY);
+    rendering.uniform3f(u_Ke, gold.K_emit[0], gold.K_emit[1], gold.K_emit[2]);
+    rendering.uniform3f(u_Ka, gold.K_ambi[0], gold.K_ambi[1], gold.K_ambi[2]);
+    rendering.uniform3f(u_Kd, gold.K_diff[0], gold.K_diff[1], gold.K_diff[2]);
+    rendering.uniform3f(u_Ks, gold.K_spec[0], gold.K_spec[1], gold.K_spec[2]);
     rendering.drawElements(rendering.TRIANGLES,
             n,
             rendering.UNSIGNED_SHORT,
@@ -143,6 +175,11 @@ function drawScene(rendering) {
     mvpMatrix.set(projMatrix).multiply(viewMatrix).multiply(modelMatrix);
     rendering.uniformMatrix4fv(u_mvpMatrix, false, mvpMatrix.elements);
 
+    var brass = new Material(MATL_BRASS);
+    rendering.uniform3f(u_Ke, brass.K_emit[0], brass.K_emit[1], brass.K_emit[2]);
+    rendering.uniform3f(u_Ka, brass.K_ambi[0], brass.K_ambi[1], brass.K_ambi[2]);
+    rendering.uniform3f(u_Kd, brass.K_diff[0], brass.K_diff[1], brass.K_diff[2]);
+    rendering.uniform3f(u_Ks, brass.K_spec[0], brass.K_spec[1], brass.K_spec[2]);
     rendering.drawElements(rendering.TRIANGLES,
             n,
             rendering.UNSIGNED_SHORT,
@@ -152,6 +189,10 @@ function drawScene(rendering) {
     mvpMatrix.set(projMatrix).multiply(viewMatrix).multiply(modelMatrix);
     rendering.uniformMatrix4fv(u_mvpMatrix, false, mvpMatrix.elements);
 
+    rendering.uniform3f(u_Ke, 0.0, 0.0, 0.0);
+    rendering.uniform3f(u_Ka, 0.6, 0.0, 0.0);
+    rendering.uniform3f(u_Kd, 0.8, 0.0, 0.0);
+    rendering.uniform3f(u_Ks, 0.8, 0.8, 0.8);
     rendering.drawElements(rendering.TRIANGLES,
             n,
             rendering.UNSIGNED_SHORT,
@@ -209,6 +250,18 @@ $(document).keydown(function(event) {
     draw(rendering);
 });
 
+$("#headlight-status").click(function() {
+    headlight = !headlight; 
+    $(this).text(headlight ? "Turn Headlight Off" : "Turn Headlight On"); 
+    draw(rendering);
+});
+
+$("#lamp-status").click(function() {
+    lamp = !lamp;
+    $(this).text(lamp ? "Turn Lamp Off" : "Turn Lamp On"); 
+    draw(rendering);
+});
+
 $(document).ready(function() {
     canvas = $("#webgl").get(0);
     canvas.width = window.innerWidth;
@@ -249,36 +302,26 @@ $(document).ready(function() {
     }
 
     // Get the uniform variables associated with the light source
-    var u_Lamp0Pos = rendering.getUniformLocation(rendering.program,
+    u_Lamp0Pos = rendering.getUniformLocation(rendering.program,
             "u_Lamp0Pos");
-    var u_Lamp0Amb = rendering.getUniformLocation(rendering.program,
+    u_Lamp0Amb = rendering.getUniformLocation(rendering.program,
             "u_Lamp0Amb");
-    var u_Lamp0Diff = rendering.getUniformLocation(rendering.program,
+    u_Lamp0Diff = rendering.getUniformLocation(rendering.program,
             "u_Lamp0Diff");
-    var u_Lamp0Spec = rendering.getUniformLocation(rendering.program,
+    u_Lamp0Spec = rendering.getUniformLocation(rendering.program,
             "u_Lamp0Spec");
     if (!u_Lamp0Pos || !u_Lamp0Amb || !u_Lamp0Diff || !u_Lamp0Spec) {
         throw new Error("Failed to get Lamp0 storage locations.");
     }
 
     // Get the material reflectance variables
-    var u_Ke = rendering.getUniformLocation(rendering.program, "u_Ke");
-    var u_Ka = rendering.getUniformLocation(rendering.program, "u_Ka");
-    var u_Kd = rendering.getUniformLocation(rendering.program, "u_Kd");
-    var u_Ks = rendering.getUniformLocation(rendering.program, "u_Ks");
+    u_Ke = rendering.getUniformLocation(rendering.program, "u_Ke");
+    u_Ka = rendering.getUniformLocation(rendering.program, "u_Ka");
+    u_Kd = rendering.getUniformLocation(rendering.program, "u_Kd");
+    u_Ks = rendering.getUniformLocation(rendering.program, "u_Ks");
     if (!u_Ke || !u_Ka || !u_Kd || !u_Ks) {
         throw new Error("Failed to get reflections storage locations");
     }
-    
-    rendering.uniform4f(u_Lamp0Pos, 6.0, 6.0, 0.0, 1.0);
-    rendering.uniform3f(u_Lamp0Amb,  0.4, 0.4, 0.4);
-    rendering.uniform3f(u_Lamp0Diff, 1.0, 1.0, 1.0);
-    rendering.uniform3f(u_Lamp0Spec, 1.0, 1.0, 1.0);
-
-    rendering.uniform3f(u_Ke, 0.0, 0.0, 0.0);
-    rendering.uniform3f(u_Ka, 0.6, 0.0, 0.0);
-    rendering.uniform3f(u_Kd, 0.8, 0.0, 0.0);
-    rendering.uniform3f(u_Ks, 0.8, 0.8, 0.8);
 
     viewMatrix = new Matrix4();
     modelMatrix = new Matrix4();

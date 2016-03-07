@@ -5,8 +5,8 @@ var VSHADER =
 
 '   uniform vec3 u_Kd;\n' +
 '   uniform mat4 u_mvpMatrix;\n' +
-'   uniform mat4 u_NormalMatrix;\n' +
 '   uniform mat4 u_ModelMatrix;\n' +
+'   uniform mat4 u_NormalMatrix;\n' +
 
 '   varying vec3 v_Kd;\n' +
 '   varying vec4 v_Position;\n' +
@@ -29,6 +29,11 @@ var FSHADER =
 '   uniform vec3 u_Lamp0Amb;\n' +
 '   uniform vec3 u_Lamp0Diff;\n' +
 '   uniform vec3 u_Lamp0Spec;\n' +
+
+'   uniform vec4 u_Lamp1Pos;\n' +
+'   uniform vec3 u_Lamp1Amb;\n' +
+'   uniform vec3 u_Lamp1Diff;\n' +
+'   uniform vec3 u_Lamp1Spec;\n' +
 
 '   uniform vec3 u_Ke;\n' +
 '   uniform vec3 u_Ka;\n' +
