@@ -125,7 +125,7 @@ function draw(rendering) {
 function drawScene(rendering) {
     if (headlight) {
         console.log(headlight);
-        rendering.uniform4f(u_Lamp0Pos, 0.0, 0.2, 1.0, 1.0);
+        rendering.uniform4f(u_Lamp0Pos, 0, 0, 10.0, 1.0);
         rendering.uniform3f(u_Lamp0Amb,  0.4, 0.4, 0.4);
         rendering.uniform3f(u_Lamp0Diff, 1.0, 1.0, 1.0);
         rendering.uniform3f(u_Lamp0Spec, 1.0, 1.0, 1.0);
