@@ -124,13 +124,21 @@ function draw(rendering) {
 
 function drawScene(rendering) {
     if (headlight) {
-        console.log(headlight);
         rendering.uniform4f(u_Lamp0Pos, 0, 0, 10.0, 1.0);
         rendering.uniform3f(u_Lamp0Amb,  0.4, 0.4, 0.4);
         rendering.uniform3f(u_Lamp0Diff, 1.0, 1.0, 1.0);
         rendering.uniform3f(u_Lamp0Spec, 1.0, 1.0, 1.0);
     } else {
         rendering.uniform4f(u_Lamp0Pos, 0.0, 0.0, 0.0, 1.0);
+    }
+
+    if (lamp) {
+        rendering.uniform4f(u_Lamp1Pos, 1, 10.0, 10.0, 1.0);
+        rendering.uniform3f(u_Lamp1Amb,  0.4, 0.4, 0.4);
+        rendering.uniform3f(u_Lamp1Diff, 1.0, 1.0, 1.0);
+        rendering.uniform3f(u_Lamp1Spec, 1.0, 1.0, 1.0);
+    } else {
+        rendering.uniform4f(u_Lamp1Pos, 0.0, 0.0, 0.0, 1.0);
     }
 
     var pearl = new Material(MATL_PEARL);
@@ -310,7 +318,18 @@ $(document).ready(function() {
             "u_Lamp0Diff");
     u_Lamp0Spec = rendering.getUniformLocation(rendering.program,
             "u_Lamp0Spec");
-    if (!u_Lamp0Pos || !u_Lamp0Amb || !u_Lamp0Diff || !u_Lamp0Spec) {
+
+    u_Lamp1Pos = rendering.getUniformLocation(rendering.program,
+            "u_Lamp1Pos");
+    u_Lamp1Amb = rendering.getUniformLocation(rendering.program,
+            "u_Lamp1Amb");
+    u_Lamp1Diff = rendering.getUniformLocation(rendering.program,
+            "u_Lamp1Diff");
+    u_Lamp1Spec = rendering.getUniformLocation(rendering.program,
+            "u_Lamp1Spec");
+
+    if (!u_Lamp0Pos || !u_Lamp0Amb || !u_Lamp0Diff || !u_Lamp0Spec ||
+        !u_Lamp1Pos || !u_Lamp1Amb || !u_Lamp1Diff || !u_Lamp1Spec) {
         throw new Error("Failed to get Lamp0 storage locations.");
     }
 
