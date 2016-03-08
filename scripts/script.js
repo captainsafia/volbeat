@@ -202,15 +202,6 @@ function drawScene(rendering) {
     viewMatrix.translate(-6.0, 0.0, 0.0);
     mvpMatrix.set(projMatrix).multiply(viewMatrix).multiply(modelMatrix);
     rendering.uniformMatrix4fv(u_mvpMatrix, false, mvpMatrix.elements);
-
-    rendering.uniform3f(u_Ke, 0.0, 0.0, 0.0);
-    rendering.uniform3f(u_Ka, 0.6, 0.0, 0.0);
-    rendering.uniform3f(u_Kd, 0.8, 0.0, 0.0);
-    rendering.uniform3f(u_Ks, 0.8, 0.8, 0.8);
-    rendering.drawElements(rendering.TRIANGLES,
-            n,
-            rendering.UNSIGNED_SHORT,
-            0);
 }
 
 function resize() {
